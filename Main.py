@@ -5,55 +5,60 @@ import Robo
 import KyanToolKit_Py
 
 ktk = KyanToolKit_Py.KyanToolKit_Py()
-ROBO_MAX = 6
+ROBO_MAX = 9
 POWER_MAX = 72
-IDLE_MAX = 1
+IDLE_MAX = 0.5
+PREG_TIME = 10
 env_q = queue.Queue()
 robo_list = []
-robo_words = []
+def checkChild():
+	for r in robo_list:
+		if (r.mate):
+			if (not r.child):
+				if r.prep >= PREG_TIME:
+					r.bornChild()
+		if 0 == r.power:
+			robo_list.remove(r)
+
 def PrintScreen():
-	for i in range(ROBO_MAX):
-		r = robo_list[i]
+	for r in robo_list:
 		# power
 		power_bar = ""
 		for i in range(r.power):
 			power_bar += "*"
-		if None == r.mate :
-			conn = str(r.id) + r.sex
-		else:
-			conn = str(r.id) + r.sex + "+" + str(r.mate.id) + r.mate.sex
-		print("== " + "Robot "+ conn + " " + power_bar + " (" + str(r.power) + ")")
-		# step
+		conn = str(r.id) + r.sex
+		if r.mate:
+			conn += "+" + str(r.mate.id) + r.mate.sex
+		if r.dad and r.mom:
+			conn += " by (" + str(r.dad.id) + "+" + str(r.mom.id) + ")"
+		print("== " + conn + " "  + power_bar + " (" + str(r.power) + ")")
+		# step & prep
 		step_bar = ""
+		prep_bar = ""
 		for i in range(r.step):
 			step_bar += "-"
-		# words
-		print("==+" + step_bar + ">" + " (" + str(r.step) + ")")
-		for s in r.words:
-			print("|> " +  s)
+		for i in range(r.prep):
+			prep_bar += "="
 		print("==+" + step_bar + ">", end="")
 		# match
-		if None != r.mate:
-			print("Matched!!\n")
-		else:
-			print("\n")
+		if r.mate:
+			print("Matched!!" + prep_bar + ">", end = "")
+		if r.child:
+			print("Born!!")
+		print("\n")
+
 for robo_id in range(ROBO_MAX):
 	power_init = int(random.random() * POWER_MAX)
-	#sex = random.choice(["♂", "♀"])
-	if 1 == (robo_id%2):
-		sex = "♂"
-	else:
-		sex = "♀"
-	r = Robo.Robo(robo_id, power_init, sex, env_q, IDLE_MAX)
-	robo_list.append(r)
-	robo_words.append("")
-	r.setDaemon(True)
-	r.start()
+	sex = random.choice(["♂","♀"])
+	r = Robo.Robo(robo_id, power_init, sex, env_q, robo_list, IDLE_MAX)
+
 while True:
+	# input("[step debug mode]")
 	ktk.clearScreen()
+	checkChild()
 	PrintScreen()
-	time.sleep(0.1)
+	time.sleep(0.2)
 	if env_q.empty():
 		break
 
-input("Press to continue ...\n")
+input("All Matched!! ...\n")
