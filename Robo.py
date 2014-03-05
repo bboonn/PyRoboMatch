@@ -3,40 +3,40 @@ import time
 import random
 
 class Robo(threading.Thread):
-	def __init__(self, robo_id, init_pwr, queue_, max_idle = 10):
+	def __init__(self, robo_id, init_pwr, sex, queue_, max_idle = 10):
 		threading.Thread.__init__(self)
 		self.q = queue_
 		self.words = []
 		self.id = robo_id
 		self.power = init_pwr
 		self.max_idle = max_idle
-		self.matched = False
 		self.step = 0
+		self.mate = None
+		self.sex = sex
 		#self.say("Hello, world.")
 
 	def __del__(self):
 		self.say("Quit.")
 
 	def run(self):
-		while(not self.matched):
+		while(None == self.mate):
 			self.step += 1
 			# send self info
-			if not self.q.full():
-				self.q.put(self)
+			self.sendMsg(self.q, self)
 			# Sleep random time
-			idle_time = int(random.random() * self.max_idle)
+			idle_time = random.random() * self.max_idle
 			time.sleep(idle_time)
-			# get target info
-			if not self.q.empty():
-				trgt = self.q.get()
-				# adept each other
-				if not trgt is self:
+			# get target
+			trgt = self.getMsg(self.q)
+			if not None == trgt:
+				if (not (trgt is self)) and (not (trgt.sex == self.sex)):
+					# adept each other
 					self.adept(trgt)
 					# check matchability
-					if self.isMatch(trgt):
-						self.say("I like #" + str(trgt.id) + " @ " + str(trgt.power) + "!")
-						self.matched = True
-						trgt.matched = True
+					if self.isMatch(trgt) and (None == trgt.mate):
+						self.mate = trgt
+						trgt.mate = self
+						self.say("I like " + str(trgt.id) + trgt.sex + " @ " + str(trgt.power) + "!")
 
 	def isMatch(self, target):
 			return target.power == self.power
@@ -49,7 +49,15 @@ class Robo(threading.Thread):
 		if target.power > self.power:
 			self.power += 1
 		elif target.power < self.power:
-			target.power += 1
+			self.power -= 1
 		elif target.power == self.power:
 			pass
+	def sendMsg(self, queue, msg):
+		if not queue.full():
+			queue.put(msg)
 
+	def getMsg(self, queue):
+		if not queue.empty():
+			return queue.get()
+		else:
+			return None
