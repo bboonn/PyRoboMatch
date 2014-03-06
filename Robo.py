@@ -15,11 +15,11 @@ class Robo(threading.Thread):
 		self.max_idle = max_idle
 		self.dad = dad
 		self.mom = mom
+		self.gene = gene
 		self.age = 0
 		self.grow = 0
 		self.mate = None
 		self.child = None
-		self.gene = gene
 		Robo.robo_list.append(self)
 		self.setDaemon(True)
 		self.start()
@@ -78,8 +78,9 @@ class Robo(threading.Thread):
 			child_gene = self.gene + 1
 			child_id = (child_gene)*100 + (self.mate.id%10)*10 + (self.id % 10)
 			child_power = int(self.power * (random.choice([0.5, 1, 1.2])))
+			child_max_idle = self.max_idle * (random.choice([0.5, 1, 1.2]))
 			child_sex = random.choice(["♂","♀"])
-			child = Robo(child_id, child_power, child_sex, self.max_idle, self.mate, self, child_gene)
+			child = Robo(child_id, child_power, child_sex, child_max_idle, self.mate, self, child_gene)
 			self.child = child
 			self.mate.child = child
 			return child
