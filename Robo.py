@@ -1,24 +1,26 @@
 import threading
 import time
 import random
+import queue
 
 class Robo(threading.Thread):
-	def __init__(self, robo_id, init_pwr, sex, queue_, robo_list, max_idle, dad = None, mom = None, gene = 0):
+	'Robo class to create a robo'
+	msg_queue = queue.Queue()
+	robo_list = []
+	def __init__(self, robo_id, init_pwr, sex, max_idle, dad = None, mom = None, gene = 0):
 		threading.Thread.__init__(self)
-		self.q = queue_
 		self.id = robo_id
 		self.power = init_pwr
 		self.sex = sex
 		self.max_idle = max_idle
 		self.dad = dad
 		self.mom = mom
-		self.prep = 0
-		self.step = 0
+		self.age = 0
+		self.grow = 0
 		self.mate = None
 		self.child = None
 		self.gene = gene
-		self.l = robo_list
-		self.l.append(self)
+		Robo.robo_list.append(self)
 		self.setDaemon(True)
 		self.start()
 	def __del__(self):
@@ -27,17 +29,18 @@ class Robo(threading.Thread):
 	def run(self):
 		while True:
 			if (not self.mate):
-				self.step += 1
+				self.age += 1
+				self.grow += 1
 				# send self info
-				self.sendMsg(self.q, self)
+				self.sendMsg(Robo.msg_queue, self)
 				# Sleep random time
 				self.goSleep(self.max_idle)
 				# get target
-				trgt = self.getMsg(self.q)
+				trgt = self.getMsg(Robo.msg_queue)
 				# deal with msg
 				self.readMsg(trgt)
 			elif (not self.child):
-				self.prep += 1
+				self.age += 1
 				self.goSleep(self.max_idle)
 			elif self.power > 0:
 				self.power -= 1
@@ -76,7 +79,7 @@ class Robo(threading.Thread):
 			child_id = (child_gene)*100 + (self.mate.id%10)*10 + (self.id % 10)
 			child_power = int(self.power * (random.choice([0.5, 1, 1.2])))
 			child_sex = random.choice(["♂","♀"])
-			child = Robo(child_id, child_power, child_sex, self.q, self.l, self.max_idle, self.mate, self, child_gene)
+			child = Robo(child_id, child_power, child_sex, self.max_idle, self.mate, self, child_gene)
 			self.child = child
 			self.mate.child = child
 			return child
