@@ -32,11 +32,11 @@ class Robo(threading.Thread):
 				self.age += 1
 				self.grow += 1
 				# send self info
-				self.sendMsg(Robo.msg_queue, self)
+				self.sendMsg(self)
 				# Sleep random time
 				self.goSleep(self.max_idle)
 				# get target
-				trgt = self.getMsg(Robo.msg_queue)
+				trgt = self.getMsg()
 				# deal with msg
 				self.readMsg(trgt)
 			elif (not self.child):
@@ -55,20 +55,20 @@ class Robo(threading.Thread):
 			return False
 
 	def adept(self, target):
-		#self.say("Approching #" + str(target.id) + " from " + str(self.power) + " to " + str(target.power))
 		if target.power > self.power:
 			self.power += 1
 		elif target.power < self.power:
 			self.power -= 1
 		elif target.power == self.power:
 			pass
-	def sendMsg(self, queue, msg):
-		if not queue.full():
-			queue.put(msg)
 
-	def getMsg(self, queue):
-		if not queue.empty():
-			return queue.get()
+	def sendMsg(self, msg):
+		if not Robo.msg_queue.full():
+			Robo.msg_queue.put(msg)
+
+	def getMsg(self):
+		if not Robo.msg_queue.empty():
+			return Robo.msg_queue.get()
 		else:
 			return None
 
