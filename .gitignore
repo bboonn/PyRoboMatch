@@ -2,6 +2,8 @@
 
 # C extensions
 *.so
+# csv file
+*.csv
 
 # Packages
 *.egg

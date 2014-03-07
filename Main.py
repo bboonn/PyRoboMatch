@@ -7,7 +7,7 @@ import KyanToolKit_Py
 
 start_time = time.time()
 ktk = KyanToolKit_Py.KyanToolKit_Py()
-ROBO_INIT = 6
+ROBO_INIT = 16
 POWER_MAX = 72
 IDLE_MAX = 0.5
 PREG_TIME = 10
@@ -162,7 +162,7 @@ while True:
 	childbearingPolicy()
 	printYard(10)
 	printStatistics()
-	time.sleep(0.2)
+	time.sleep(IDLE_MAX/2)
 	if Robo.Robo.msg_queue.empty():
 		break
 byeBye("-- Happy Robo Life! --")
