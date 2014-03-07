@@ -7,6 +7,8 @@ class Robo(threading.Thread):
 	'Robo class to create a robo'
 	msg_queue = queue.Queue()
 	robo_list = []
+	PREG_TIME = 10
+	LIFE_LENGTH = 100
 	def __init__(self, robo_id, init_pwr, sex, max_idle, dad = None, mom = None, gene = 0):
 		threading.Thread.__init__(self)
 		self.id = robo_id
@@ -19,7 +21,8 @@ class Robo(threading.Thread):
 		self.age = 0
 		self.grow = 0
 		self.mate = None
-		self.child = None
+		self.child = []
+		self.state = "alive" # alive / power_off / old_enough
 		Robo.robo_list.append(self)
 		self.setDaemon(True)
 		self.start()
@@ -27,26 +30,35 @@ class Robo(threading.Thread):
 		pass
 
 	def run(self):
-		while True:
+		while "alive" == self.state:
 			if (not self.mate):
 				self.age += 1
 				self.grow += 1
+				# get and read msg
+				trgt = self.getMsg()
+				self.readMsg(trgt)
 				# send self info
 				self.sendMsg(self)
-				# Sleep random time
-				self.goSleep(self.max_idle)
-				# get target
-				trgt = self.getMsg()
-				# deal with msg
-				self.readMsg(trgt)
-			elif (not self.child):
+
+			if self.mate and (not self.child):
 				self.age += 1
-				self.goSleep(self.max_idle)
-			elif self.power > 0:
+
+			if (self.mate and self.child):
 				self.power -= 1
-				self.goSleep(self.max_idle)
-			if 0 == self.power:
-				break
+			# check state
+			self.checkHealth()
+			# Sleep random time
+			self.goSleep(self.max_idle)
+
+	def checkHealth(self):
+		if 0 == self.power:
+			# Not enough energy
+			self.state = "power_off"
+
+		if self.age > Robo.LIFE_LENGTH:
+			# Can't hold on anymore
+			self.state = "old_enough"
+
 
 	def isMatch(self, target):
 		if not target.mate:
@@ -72,20 +84,22 @@ class Robo(threading.Thread):
 		else:
 			return None
 
-	def bornChild(self):
-		if (not self.child) and ("♀" == self.sex) and (self.mate != None):
-			# generation digit / dad last name digit / mom last name digit
+	def bornChild(self, restrict = 1):
+		if (self.childNum() < restrict)	and ("♀" == self.sex) and (self.mate != None) and ((self.age-self.grow) >= Robo.PREG_TIME):
+			# generation digit / dad last name digit / mom last name digit / kid number
 			child_gene = self.gene + 1
-			child_id = (child_gene)*100 + (self.mate.id%10)*10 + (self.id % 10)
+			child_id = (child_gene)*1000 + (self.mate.id%10)*100 + (self.id % 10) * 10 + self.childNum()
 			child_power = int(self.power * (random.choice([0.5, 1, 1.2])))
 			child_max_idle = self.max_idle * (random.choice([0.5, 1, 1.2]))
 			child_sex = random.choice(["♂","♀"])
 			child = Robo(child_id, child_power, child_sex, child_max_idle, self.mate, self, child_gene)
-			self.child = child
-			self.mate.child = child
+			self.child.append(child)
+			self.mate.child.append(child)
 			return child
 		else:
 			return None
+	def childNum(self):
+		return len(self.child)
 
 	def readMsg(self, target):
 		if target:
