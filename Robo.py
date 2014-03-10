@@ -5,16 +5,15 @@ import queue
 
 class Robo(threading.Thread):
 	'Robo class to create a robo'
-	msg_queue = queue.Queue()
-	robo_list = []
 	PREG_TIME = 10
 	LIFE_LENGTH = 100
-	def __init__(self, robo_id, init_pwr, sex, max_idle, dad = None, mom = None, gene = 0):
+	def __init__(self, robo_id, init_pwr, sex, max_idle, yard, dad = None, mom = None, gene = 0):
 		threading.Thread.__init__(self)
 		self.id = robo_id
 		self.power = init_pwr
 		self.sex = sex
 		self.max_idle = max_idle
+		self.msg_queue = yard.get_queue()
 		self.dad = dad
 		self.mom = mom
 		self.gene = gene
@@ -23,7 +22,6 @@ class Robo(threading.Thread):
 		self.mate = None
 		self.child = []
 		self.state = "alive" # alive / power_off / old_enough
-		Robo.robo_list.append(self)
 		self.setDaemon(True)
 		self.start()
 	def __del__(self):
@@ -75,12 +73,12 @@ class Robo(threading.Thread):
 			pass
 
 	def sendMsg(self, msg):
-		if not Robo.msg_queue.full():
-			Robo.msg_queue.put(msg)
+		if not self.msg_queue.full():
+			self.msg_queue.put(msg)
 
 	def getMsg(self):
-		if not Robo.msg_queue.empty():
-			return Robo.msg_queue.get()
+		if not self.msg_queue.empty():
+			return self.msg_queue.get()
 		else:
 			return None
 
