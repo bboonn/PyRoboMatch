@@ -1,5 +1,5 @@
 ##################################################################
-# Version 1.0
+# Version 1.3
 ##################################################################
 import os
 import sys
@@ -76,15 +76,15 @@ class KyanToolKit_Py(object):
 		trace.write(trace_header + trace_content + "\n</" + trace_type + ">\n")
 
 	def RunCmd(self, words):
-		self.banner(words)
+		print(self.banner(words))
 		result = os.system(words)
 		self.CheckResult(result)
 
 	def CheckResult(self, result):
 		if 0 == result:
-			self.pInfo("Done")
+			self.Info("Done")
 		else:
-			self.pWarn("Failed")
+			self.Warn("Failed")
 
 	def Info(self, words):
 		print("[INFO] " + words)
