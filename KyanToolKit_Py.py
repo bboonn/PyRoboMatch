@@ -35,7 +35,7 @@ class KyanToolKit_Py(object):
 			os.system('clear')
 		else:
 			os.system('clear')
-			print("[ No clearScreen for " + sys.platform + " ]")
+			self.Err("No clearScreen for " + sys.platform)
 
 	def pressToContinue(self,input_="..."):
 		#PY2# raw_input(input_)
@@ -60,12 +60,7 @@ class KyanToolKit_Py(object):
 	def byeBye(self,input_="See you later."):
 		exit(input_)
 
-	def TRACE(self,*input_):
-		if input_[0] in ['INFO','ERR','WARNING']:
-			trace_type = input_[0]
-			input_ = input_[1:]
-		else:
-			trace_type = 'INFO'
+	def TRACE(self,input_,trace_type='INFO'):
 		trace_content = ''.join(input_)
 		current_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 		current_function = sys._getframe().f_back
@@ -79,3 +74,23 @@ class KyanToolKit_Py(object):
 				+ ' FUNC="' + current_function_name + '()">\n'
 		trace = open(self.trace_file,'a')
 		trace.write(trace_header + trace_content + "\n</" + trace_type + ">\n")
+
+	def RunCmd(self, words):
+		self.banner(words)
+		result = os.system(words)
+		self.CheckResult(result)
+
+	def CheckResult(self, result):
+		if 0 == result:
+			self.pInfo("Done")
+		else:
+			self.pWarn("Failed")
+
+	def Info(self, words):
+		print("[INFO] " + words)
+
+	def Warn(self, words):
+		print("[WARNING] " + words)
+
+	def Err(self, words):
+		print("[ERROR] " + words)
