@@ -31,7 +31,7 @@ class KyanToolKit_Py(object):
 	def clearScreen(self):
 		if "win32" == sys.platform:
 			os.system('cls')
-		elif "linux2" == sys.platform:
+		elif "linux" in sys.platform:
 			os.system('clear')
 		else:
 			os.system('clear')
@@ -39,12 +39,12 @@ class KyanToolKit_Py(object):
 
 	def pressToContinue(self,input_="..."):
 		#PY2# raw_input(input_)
-		input(input_) 
+		input(input_)
 
 	def getInput(self,question_,prompt_='> '):
 		print(question_)
 		#PY2# return raw_input(prompt_).strip()
-		return input(prompt_).strip() 
+		return input(prompt_).strip()
 
 	def getChoice(self,choices_):
 		out_print = ""
@@ -70,7 +70,7 @@ class KyanToolKit_Py(object):
 		current_time = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 		current_function = sys._getframe().f_back
 		current_function_name = current_function.f_code.co_name
-		current_line = current_function.f_code.co_firstlineno	
+		current_line = current_function.f_code.co_firstlineno
 		current_filename = current_function.f_code.co_filename
 		trace_header = "\n<" + trace_type \
 				+ ' FILE="' + current_filename + '"' \
